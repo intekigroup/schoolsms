@@ -20,11 +20,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 22, cache: npm }
-      - run: npm ci
-      - run: npx prisma validate
-      - run: npx prisma generate
-      - run: npx tsc --noEmit -p .
+        with: { node-version: 22 }
+      # Same toolchain as deploy/Dockerfile: Yarn 1 via corepack, lockfile respected.
+      - run: corepack enable && corepack prepare yarn@1.22.22 --activate
+      - run: yarn install --frozen-lockfile
+      - run: yarn prisma validate
+      - run: yarn prisma generate
+      - run: yarn tsc --noEmit -p .
 
   deploy:
     needs: check
