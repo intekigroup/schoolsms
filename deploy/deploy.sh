@@ -6,6 +6,8 @@
 set -euo pipefail
 BRANCH="${1:-main}"
 cd "$(dirname "$0")/.."
+mkdir -p backups
+exec 9>backups/.autodeploy.lock; flock -w 1800 9 || { echo "another deploy is running"; exit 1; }   # never two builds at once
 echo "[$(date -u +%FT%TZ)] deploy $BRANCH start"
 git fetch --quiet origin "$BRANCH"
 BEFORE=$(git rev-parse --short HEAD 2>/dev/null || echo none)
