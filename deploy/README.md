@@ -27,13 +27,18 @@ docker compose exec app node scripts/backup-school.mjs school-kilimanjaro backup
 ```
 
 ## Deploying a new version (from the dev machine)
+The server deploys **from the Git repository** (`github.com/intekigroup/schoolsms`), never from a laptop:
+
 ```sh
-rsync -az --delete -e "ssh -i ~/.ssh/id_ed25519_shule -p 2024" \
-  --exclude node_modules --exclude .next --exclude .git --exclude backups --exclude .env \
-  ./ inteki@169.58.3.24:~/shule/
-ssh -i ~/.ssh/id_ed25519_shule -p 2024 inteki@169.58.3.24 'cd ~/shule && docker compose up -d --build'
+git push origin main                                   # from your machine
+ssh -i ~/.ssh/id_ed25519_shule -p 2024 inteki@169.58.3.24 '~/shule/deploy/deploy.sh'
 ```
-Migrations apply automatically on start. Roll back by rebuilding the previous source.
+
+`deploy/deploy.sh` fetches `origin/main`, resets the checkout to it (`.env` and `backups/` are untracked and
+untouched), rebuilds the image, waits for the health check and confirms `/login` answers 200. Migrations apply
+automatically on start. Roll back with `~/shule/deploy/deploy.sh <branch-or-tag>` or by reverting the commit.
+`.github/workflows/deploy.yml` runs the type-check on every push and, once the four `DEPLOY_*` secrets are set,
+deploys `main` automatically.
 
 ## Backups
 `deploy/backup.sh` (in the project, so `rsync --delete` keeps it — the old copy outside the tree was deleted by a
