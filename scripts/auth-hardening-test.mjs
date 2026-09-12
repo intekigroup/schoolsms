@@ -110,7 +110,8 @@ ck('verified can sign in', Boolean(await login(EMAIL, PASS)), true)
 const signupEmail = `signup-${Date.now()}@example.com`
 const su = await fetch(`${B}/api/signup`, {
   method: 'POST', headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ name: 'New Admin', email: signupEmail, password: 'signup-pass-123', schoolName: 'Test Academy' }),
+  // The registration wizard's required fields (see app/api/signup/route.ts).
+  body: JSON.stringify({ name: 'New Admin', email: signupEmail, phone: '0745000123', password: 'signup-pass-123', schoolName: 'Test Academy', levels: ['PRIMARY'], region: 'Kilimanjaro', acceptTerms: true }),
 })
 const suJson = await su.json()
 ck('signup ok', su.status, 200)
@@ -169,6 +170,10 @@ if (testSchoolIds.length) {
   await prisma.invoicePayment.deleteMany({ where: { invoice: { schoolId: { in: testSchoolIds } } } })
   await prisma.invoice.deleteMany({ where: { schoolId: { in: testSchoolIds } } })
   await prisma.auditLog.deleteMany({ where: { schoolId: { in: testSchoolIds } } })
+  // Signup now also creates the academic year, its terms and lead notifications for super admins.
+  await prisma.term.deleteMany({ where: { academicYear: { schoolId: { in: testSchoolIds } } } })
+  await prisma.academicYear.deleteMany({ where: { schoolId: { in: testSchoolIds } } })
+  await prisma.notification.deleteMany({ where: { title: 'New school registered', message: { contains: 'Test Academy' } } })
   await prisma.schoolSubscription.deleteMany({ where: { schoolId: { in: testSchoolIds } } })
   await prisma.user.deleteMany({ where: { schoolId: { in: testSchoolIds } } })
   await prisma.school.deleteMany({ where: { id: { in: testSchoolIds } } })

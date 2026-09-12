@@ -12,8 +12,12 @@ const files = readdirSync('scripts').filter((f) => /-test\.mjs$|^feature-review\
 const ping = await fetch(`${base}/login`).then((r) => r.status).catch(() => 0)
 if (ping !== 200) { console.error(`No dev server at ${base} (got ${ping}). Start it with: npm run dev`); process.exit(2) }
 
+// Suites that need the dev server started with a special environment (an SMS stand-in, a local SMTP sink)
+// declare it in their header; they are skipped unless that environment is present.
+const gated = { 'sms-test.mjs': 'SMS_PROVIDER', 'email-delivery-test.mjs': 'SMTP_IGNORE_TLS' }
 const results = []
 for (const f of files) {
+  if (gated[f] && !process.env[gated[f]]) { console.log(`- ${f.padEnd(34)} skipped (needs ${gated[f]}; see the file header)`); continue }
   const t0 = Date.now()
   const r = spawnSync('node', [`scripts/${f}`, base], { encoding: 'utf8' })
   const out = (r.stdout ?? '') + (r.stderr ?? '')
