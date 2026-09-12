@@ -1312,3 +1312,21 @@ model AccountingSettings {
 
   school    School   @relation(fields: [schoolId], references: [id])
 }
+
+/// Unhandled server errors (see instrumentation.ts / lib/error-log.ts); surfaced on the super-admin console.
+model ErrorLog {
+  id          String   @id @default(cuid())
+  fingerprint String
+  message     String
+  stack       String?
+  digest      String?
+  path        String?
+  method      String?
+  kind        String?
+  userId      String?
+  schoolId    String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([fingerprint, createdAt])
+}

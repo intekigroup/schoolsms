@@ -29,6 +29,8 @@ services:
     build:
       context: .
       dockerfile: deploy/Dockerfile
+      args:
+        GIT_COMMIT: ${GIT_COMMIT:-unknown}
     image: shule-sms
     restart: unless-stopped
     env_file: .env

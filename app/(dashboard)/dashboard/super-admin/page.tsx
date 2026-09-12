@@ -2,6 +2,7 @@ import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/db'
 import { SuperAdminClient } from './super-admin-client'
+import { RecentErrors } from './recent-errors'
 import { isSaas } from '@/lib/edition'
 import { PAGE_SIZE, pageParam, pageArgs } from '@/lib/paging'
 
@@ -34,7 +35,9 @@ export default async function SuperAdminPage({ searchParams }: { searchParams: P
     prisma.invoicePayment.aggregate({ where: { invoice: { status: { not: 'VOID' } } }, _sum: { amount: true } }),
   ])
 
-  return <SuperAdminClient
+  return (<>
+    <div className="mb-4"><RecentErrors /></div>
+    <SuperAdminClient
     saas={isSaas()}
     stats={{ schoolCount, userCount, activeSubscriptions }}
     pageSize={PAGE_SIZE}
@@ -59,4 +62,5 @@ export default async function SuperAdminPage({ searchParams }: { searchParams: P
       }
     })}
   />
+  </>)
 }

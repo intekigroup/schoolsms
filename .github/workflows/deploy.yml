@@ -24,8 +24,9 @@ jobs:
       # Same toolchain as deploy/Dockerfile: Yarn 1 via corepack, lockfile respected.
       - run: corepack enable && corepack prepare yarn@1.22.22 --activate
       - run: yarn install --frozen-lockfile
-      - run: yarn prisma validate
-      - run: yarn prisma generate
+      # Prisma reads DATABASE_URL from the schema even for validate/generate; any well-formed value will do.
+      - run: yarn prisma validate && yarn prisma generate
+        env: { DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci" }
       - run: yarn tsc --noEmit -p .
 
   deploy:

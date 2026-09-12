@@ -12,7 +12,7 @@ BEFORE=$(git rev-parse --short HEAD 2>/dev/null || echo none)
 git reset --quiet --hard "origin/$BRANCH"
 AFTER=$(git rev-parse --short HEAD)
 echo "  $BEFORE -> $AFTER: $(git log -1 --format=%s)"
-docker compose up -d --build 2>&1 | grep -E "Built|Recreated|Started|error" || true
+GIT_COMMIT=$AFTER docker compose up -d --build 2>&1 | grep -E "Built|Recreated|Started|error" || true
 # Wait for the container's health check, then for the app to answer through the proxy.
 for i in $(seq 1 60); do
   s=$(docker inspect -f '{{.State.Health.Status}}' shule-app-1 2>/dev/null || echo starting)

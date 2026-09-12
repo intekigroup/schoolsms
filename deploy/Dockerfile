@@ -25,4 +25,6 @@ RUN mkdir -p /app/backups && chown -R node:node /app
 USER node
 EXPOSE 3000
 # Apply pending migrations on every start, then serve.
+ARG GIT_COMMIT=unknown
+ENV GIT_COMMIT=$GIT_COMMIT
 CMD ["sh", "-c", "npx prisma migrate deploy && yarn start -p 3000"]

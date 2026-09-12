@@ -19,6 +19,18 @@ const nextConfig = {
   // wildcard: every conversation previews under the same parent domain and serves content its own
   // author controls, so `**.<domain>` would let any UNRELATED app's preview reach this dev server.
   allowedDevOrigins: ['127.0.0.1', '13dadffc51.na116.preview.abacusai.app'],
+  // Browser hardening the proxy does not add for us. No CSP yet: Next's inline runtime needs a nonce
+  // pipeline first, and a broken CSP blanks the app for every school at once.
+  async headers() {
+    const security = [
+      { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=()' },
+    ];
+    return [{ source: '/(.*)', headers: security }];
+  },
 };
 
 const fs = require('fs');
