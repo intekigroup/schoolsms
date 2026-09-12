@@ -1,0 +1,58 @@
+# Shule SMS on the INTEKI server (compose project "shule", run from this directory).
+# Caddy (compose project "inteki-oms") owns :80/:443 and terminates TLS for
+# school.intekigroup.co.tz; this app publishes no ports and joins Caddy's network
+# under the alias "shule-web", which the Caddyfile proxies to on :3000.
+#
+#   docker compose up -d --build        build/update and start
+#   docker compose exec app node scripts/backup-school.mjs school-kilimanjaro backups
+#   docker compose logs -f app
+services:
+  # Named shule-db, not db: the app also sits on Caddy's network, where the OMS
+  # project already has a service called "db" (MySQL) and Docker DNS would hand
+  # that one back first.
+  shule-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shule
+      POSTGRES_USER: shule
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shule -d shule"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    image: shule-sms
+    restart: unless-stopped
+    env_file: .env
+    depends_on:
+      shule-db:
+        condition: service_healthy
+    volumes:
+      - backups:/app/backups
+    networks:
+      default: {}
+      inteki-oms_default:
+        aliases:
+          - shule-web
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3000/login"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  pgdata:
+  backups:
+
+networks:
+  inteki-oms_default:
+    external: true

@@ -1,0 +1,16 @@
+{
+  "name": "Shule SMS - School Management System",
+  "short_name": "Shule SMS",
+  "description": "Comprehensive School Management System for Tanzania private schools",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0090C1",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
