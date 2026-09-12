@@ -26,4 +26,5 @@ case "$status" in
 esac
 [ "$status" = success ] || exit 0
 echo "[$(date -u +%FT%TZ)] $SHORT passed checks — deploying"
+exec 9>&-   # hand the lock to deploy.sh, which takes it itself (holding it here would deadlock)
 ./deploy/deploy.sh main
