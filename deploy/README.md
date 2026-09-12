@@ -37,8 +37,10 @@ ssh -i ~/.ssh/id_ed25519_shule -p 2024 inteki@169.58.3.24 '~/shule/deploy/deploy
 `deploy/deploy.sh` fetches `origin/main`, resets the checkout to it (`.env` and `backups/` are untracked and
 untouched), rebuilds the image, waits for the health check and confirms `/login` answers 200. Migrations apply
 automatically on start. Roll back with `~/shule/deploy/deploy.sh <branch-or-tag>` or by reverting the commit.
-`.github/workflows/deploy.yml` runs the type-check on every push and, once the four `DEPLOY_*` secrets are set,
-deploys `main` automatically.
+`.github/workflows/deploy.yml` runs the type-check on every push. Deployment is **pull-based**: `deploy/autodeploy.sh`
+runs from cron every 2 minutes, fetches `origin/main`, and when the commit differs from the checkout and GitHub's
+`check` job for that commit is green, runs `deploy.sh`. No SSH key in GitHub, nothing to configure. Log:
+`backups/autodeploy.log`. To pause automatic deploys, comment the cron line.
 
 ## Backups
 `deploy/backup.sh` (in the project, so `rsync --delete` keeps it — the old copy outside the tree was deleted by a
